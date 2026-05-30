@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; color: #222;">
+  <h2>Great news, {{.Client.FirstName}}!</h2>
+  <p>Your recent order of <strong>${{printf "%.2f" .Profile.LastOrderTotalUSD}}</strong> qualifies for a reward.</p>
+  <p>We added <strong>{{.Points}} points</strong> to your account.</p>
+  <p>Lifetime spend: ${{printf "%.2f" .Profile.LifetimeSpendUSD}}</p>
+  <p>Thank you for being a valued customer.</p>
+</body>
+</html>

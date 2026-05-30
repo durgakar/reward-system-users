@@ -1,0 +1,62 @@
+rules:
+  - id: high_order_bonus
+    name: 500 points for orders $100+
+    description: Award 500 points when the latest order exceeds $100 USD
+    segment: high_spender
+    enabled: true
+    condition:
+      field: last_order_total_usd
+      operator: gte
+      value: 100
+    actions:
+      - type: award_points
+        points: 500
+      - type: send_email
+        template: high_spender_bonus
+        subject: "You earned {{.Points}} reward points, {{.Client.FirstName}}!"
+
+  - id: frequent_buyer_thanks
+    name: Thank frequent buyers
+    description: Send a thank-you email to frequent buyers (no points)
+    segment: frequent_buyer
+    enabled: true
+    condition:
+      field: orders_last_90_days
+      operator: gte
+      value: 3
+    actions:
+      - type: send_email
+        template: frequent_buyer_thanks
+        subject: "Thanks for shopping with us, {{.Client.FirstName}}"
+
+  - id: win_back_at_risk
+    name: Win-back bonus for inactive clients
+    description: 250 points when at-risk clients return with any order
+    segment: at_risk
+    enabled: true
+    condition:
+      field: last_order_total_usd
+      operator: gte
+      value: 1
+    actions:
+      - type: award_points
+        points: 250
+      - type: send_email
+        template: welcome_back
+        subject: "Welcome back — {{.Points}} points added to your account"
+
+  - id: electronics_milestone
+    name: Electronics category milestone
+    description: 100 points when electronics fans spend $75+ on latest order
+    segment: electronics_fan
+    enabled: true
+    condition:
+      field: last_order_total_usd
+      operator: gte
+      value: 75
+    actions:
+      - type: award_points
+        points: 100
+      - type: send_email
+        template: category_bonus
+        subject: "Electronics bonus — {{.Points}} points for you"

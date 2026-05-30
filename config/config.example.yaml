@@ -1,0 +1,29 @@
+campaign_id: spring_rewards_2026
+
+segments_file: config/segments.yaml
+rules_file: config/rules.yaml
+templates_dir: templates
+
+shopping_source: csv
+shopping_data_path: data/sample_clients.csv
+
+email_sender: stdout
+reward_provider: ledger
+
+# Set true to preview matches without sending email or awarding points
+dry_run: true
+
+smtp:
+  host: localhost
+  port: 1025
+  from: rewards@example.com
+
+open_loyalty:
+  base_url: http://localhost:8181/api
+  api_key: YOUR_OPEN_LOYALTY_TOKEN
+  store_code: default
+
+voucherify:
+  base_url: https://api.voucherify.io/v1
+  application_id: YOUR_APP_ID
+  secret_key: YOUR_SECRET_KEY

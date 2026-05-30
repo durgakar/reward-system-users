@@ -1,0 +1,35 @@
+segments:
+  - id: high_spender
+    description: Clients with lifetime spend over $500
+    match:
+      all:
+        - field: lifetime_spend_usd
+          operator: gte
+          value: 500
+
+  - id: frequent_buyer
+    description: At least 3 orders in the last 90 days
+    match:
+      all:
+        - field: orders_last_90_days
+          operator: gte
+          value: 3
+
+  - id: at_risk
+    description: No purchase in 60+ days but historically active
+    match:
+      all:
+        - field: days_since_last_order
+          operator: gte
+          value: 60
+        - field: lifetime_spend_usd
+          operator: gte
+          value: 200
+
+  - id: electronics_fan
+    description: Prefers electronics category
+    match:
+      all:
+        - field: preferred_category
+          operator: eq
+          value: electronics

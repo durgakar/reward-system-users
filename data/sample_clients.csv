@@ -1,0 +1,6 @@
+client_id,email,first_name,last_name,lifetime_spend_usd,last_order_total_usd,last_order_at,orders_last_90_days,average_order_usd,preferred_category,days_since_last_order
+c-001,alice@example.com,Alice,Nguyen,820.50,145.00,2026-05-20,4,95.00,electronics,10
+c-002,bob@example.com,Bob,Smith,310.00,45.00,2026-05-01,2,55.00,home,29
+c-003,cara@example.com,Cara,Lee,1200.00,210.00,2026-05-18,5,120.00,electronics,12
+c-004,dan@example.com,Dan,Patel,180.00,0.00,2026-02-01,0,60.00,fashion,118
+c-005,eva@example.com,Eva,Garcia,540.00,88.00,2026-05-25,3,72.00,electronics,5

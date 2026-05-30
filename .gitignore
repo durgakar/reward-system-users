@@ -1,0 +1,19 @@
+# Binaries
+/bin/
+/dist/
+*.exe
+*.test
+
+# Go
+/vendor/
+
+# Local config secrets
+config/config.local.yaml
+.env
+
+# Generated emails during dev
+/output/
+
+# IDE
+.idea/
+.vscode/
