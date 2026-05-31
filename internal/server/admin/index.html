@@ -9,7 +9,7 @@
 <body>
   <header>
     <h1>Reward System Admin</h1>
-    <p>Manage segments and rules without editing YAML files.</p>
+    <p>Demo: segment clients by shopping habits, apply rules, award points, and send emails.</p>
   </header>
 
   <section class="toolbar">
@@ -19,12 +19,41 @@
   </section>
 
   <nav>
-    <button class="tab active" data-tab="segments">Segments</button>
+    <button class="tab active" data-tab="overview">How it works</button>
+    <button class="tab" data-tab="clients">Clients</button>
+    <button class="tab" data-tab="segments">Segments</button>
     <button class="tab" data-tab="rules">Rules</button>
     <button class="tab" data-tab="runs">Campaign runs</button>
   </nav>
 
-  <main id="segments" class="panel active">
+  <main id="overview" class="panel active">
+    <h2>Reward campaign flow</h2>
+    <ol class="flow-steps">
+      <li><strong>Load clients</strong> — shopping profiles (spend, orders, category) come from the database.</li>
+      <li><strong>Evaluate segments</strong> — each client is tagged (e.g. <code>high_spender</code>, <code>frequent_buyer</code>).</li>
+      <li><strong>Match rules</strong> — enabled rules whose segment matches and whose condition passes fire actions.</li>
+      <li><strong>Execute actions</strong> — award loyalty points and send templated emails.</li>
+    </ol>
+
+    <div class="flow-diagram">
+      Client profile → Segments → Rules → Points + Email
+    </div>
+
+    <h3>Demo clients at a glance</h3>
+    <p class="hint">Alice &amp; Cara qualify for <code>high_order_bonus</code> (500 pts). Eva gets <code>electronics_milestone</code> (100 pts). Dan is <code>at_risk</code> but has no recent order so no win-back yet.</p>
+    <div id="overviewClients"></div>
+
+    <h3>Last campaign results</h3>
+    <div id="lastRunResults"><p class="hint">Click <strong>Run campaign now</strong> to process all clients and see per-client outcomes here.</p></div>
+  </main>
+
+  <main id="clients" class="panel">
+    <h2>Clients &amp; expected matches</h2>
+    <p class="hint">Segments and rules are computed live from stored profiles — no campaign run required.</p>
+    <div id="clientList"></div>
+  </main>
+
+  <main id="segments" class="panel">
     <h2>Segments</h2>
     <div id="segmentList"></div>
     <h3>Create / update segment</h3>

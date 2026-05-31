@@ -29,10 +29,15 @@ type Options struct {
 	URL    string
 }
 
-func Open(opts Options) (*SQLStore, error) {
+func Open(opts Options) (Store, error) {
 	driver := opts.Driver
 	if driver == "" {
 		driver = "postgres"
+	}
+	if driver == "memory" {
+		s := NewMemoryStore()
+		_ = s.SeedIfEmpty(context.Background())
+		return s, nil
 	}
 	dsn := opts.URL
 	if dsn == "" {

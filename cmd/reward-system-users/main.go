@@ -37,6 +37,8 @@ func main() {
 		runMigrate(*configPath)
 	case "run":
 		runCampaign(*configPath)
+	case "voucherify-test":
+		runVoucherifyTest(*configPath)
 	default:
 		printUsage()
 		os.Exit(1)
@@ -44,7 +46,7 @@ func main() {
 }
 
 func printUsage() {
-	fmt.Println("usage: reward-system-users <serve|migrate|run> [-config path]")
+	fmt.Println("usage: reward-system-users <serve|migrate|run|voucherify-test> [-config path]")
 }
 
 func runServe(configPath string) {
@@ -102,6 +104,36 @@ func runMigrate(configPath string) {
 		log.Fatalf("migrate: %v", err)
 	}
 	log.Println("migrations applied")
+}
+
+func runVoucherifyTest(configPath string) {
+	cfg, err := config.Load(configPath)
+	if err != nil {
+		log.Fatalf("config: %v", err)
+	}
+	application, err := app.NewWithConfig(cfg)
+	if err != nil {
+		log.Fatalf("startup: %v", err)
+	}
+	defer application.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := application.TestVoucherifyConnection(ctx); err != nil {
+		log.Fatalf("voucherify: %v", err)
+	}
+	log.Println("voucherify: connection OK")
+	log.Printf("  app_id: %s", maskSecret(cfg.Voucherify.ApplicationID))
+	log.Printf("  loyalty_id: %s", cfg.Voucherify.LoyaltyID)
+	log.Printf("  base_url: %s", cfg.Voucherify.BaseURL)
+}
+
+func maskSecret(s string) string {
+	if len(s) <= 8 {
+		return "****"
+	}
+	return s[:4] + "..." + s[len(s)-4:]
 }
 
 func runCampaign(configPath string) {

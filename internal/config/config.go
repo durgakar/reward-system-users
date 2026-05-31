@@ -172,11 +172,12 @@ func (c *Config) Addr() string {
 
 func (c *Config) UsesDatabase() bool {
 	return c.RulesSource == "database" || c.SegmentsSource == "database" ||
-		c.ShoppingSource == "database" || c.RewardProvider == "db_ledger"
+		c.ShoppingSource == "database" || c.RewardProvider == "db_ledger" ||
+		c.Database.Driver == "memory"
 }
 
 func (c *Config) Validate() error {
-	if c.UsesDatabase() && c.Database.URL == "" {
+	if c.UsesDatabase() && c.Database.Driver != "memory" && c.Database.URL == "" {
 		return fmt.Errorf("database.url is required for database-backed configuration")
 	}
 	if c.ShoppingSource == "csv" && c.ShoppingDataPath == "" {

@@ -59,6 +59,14 @@ func (a *Application) initStore() error {
 	if !a.Config.UsesDatabase() {
 		return nil
 	}
+	if a.Config.Database.Driver == "memory" {
+		s, err := store.Open(store.Options{Driver: "memory"})
+		if err != nil {
+			return err
+		}
+		a.Store = s
+		return nil
+	}
 	if a.Config.Database.URL == "" {
 		return fmt.Errorf("database.url is required when using database-backed sources")
 	}

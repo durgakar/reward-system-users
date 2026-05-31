@@ -72,7 +72,54 @@ All `/api/v1/*` routes require `Authorization: Bearer <admin_api_key>`.
 | POST | `/api/v1/campaigns/run` | Run campaign now |
 | GET | `/api/v1/campaigns/runs` | Campaign history |
 
-## Reward integrations
+## Voucherify integration
+
+The project includes a live **Voucherify** loyalty provider. To connect:
+
+### 1. Get credentials from Voucherify
+
+1. Sign up at [voucherify.io](https://www.voucherify.io/)
+2. **Project Settings → Application Keys** — copy **Application ID** and **Secret Key**
+3. **Loyalty → your campaign** — copy **Campaign ID** (starts with `camp_`)
+
+### 2. Configure
+
+```yaml
+reward_provider: voucherify
+
+voucherify:
+  base_url: https://api.voucherify.io/v1
+  application_id: YOUR_APP_ID
+  secret_key: YOUR_SECRET_KEY
+  loyalty_id: camp_XXXXXXXXX
+```
+
+Or via environment:
+
+```bash
+export REWARD_PROVIDER=voucherify
+export VOUCHERIFY_APP_ID=your_app_id
+export VOUCHERIFY_SECRET_KEY=your_secret_key
+export VOUCHERIFY_LOYALTY_ID=camp_XXXXXXXXX
+```
+
+### 3. Test the connection
+
+```bash
+go run ./cmd/reward-system-users voucherify-test -config config/config.yaml
+```
+
+### 4. Run a campaign
+
+When rules award points, the provider will:
+1. Enroll the client as a loyalty member (if new)
+2. Add points via `POST /loyalties/{campaignId}/members/{clientId}/balance`
+
+Client IDs from your database map to Voucherify `customer.source_id`.
+
+---
+
+## Reward integrations (all providers)
 
 Set in config or environment:
 

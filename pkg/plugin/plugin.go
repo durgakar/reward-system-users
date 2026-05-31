@@ -10,11 +10,11 @@ import (
 
 // Client is the minimal identity used across the pipeline.
 type Client struct {
-	ID        string
-	Email     string
-	FirstName string
-	LastName  string
-	Segment   []string // optional pre-assigned tags from upstream CRM
+	ID        string   `json:"id"`
+	Email     string   `json:"email"`
+	FirstName string   `json:"first_name"`
+	LastName  string   `json:"last_name"`
+	Segment   []string `json:"segment,omitempty"` // optional pre-assigned tags from upstream CRM
 }
 
 // ClientProfile holds shopping behaviour metrics for rule evaluation.

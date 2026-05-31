@@ -6,6 +6,9 @@ CMD=./cmd/reward-system-users
 run:
 	go run $(CMD) run -config config/config.yaml
 
+serve-dev:
+	go run $(CMD) serve -config config/config.dev.yaml
+
 serve:
 	go run $(CMD) serve -config config/config.yaml
 

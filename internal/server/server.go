@@ -45,6 +45,7 @@ func (s *Server) routes() {
 	r.Route("/api/v1", func(api chi.Router) {
 		api.Use(s.authMiddleware)
 		api.Get("/clients", s.handleListClients)
+		api.Get("/clients/detail", s.handleListClientDetails)
 		api.Route("/segments", func(seg chi.Router) {
 			seg.Get("/", s.handleListSegments)
 			seg.Post("/", s.handleCreateSegment)
@@ -63,8 +64,7 @@ func (s *Server) routes() {
 		api.Get("/campaigns/runs", s.handleListCampaignRuns)
 	})
 
-	r.Get("/admin", s.handleAdmin)
-	r.Get("/admin/*", s.handleAdmin)
+	s.mountAdmin(r)
 
 	s.router = r
 }

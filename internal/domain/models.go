@@ -15,21 +15,21 @@ const (
 
 // Condition is a single predicate on a client profile field.
 type Condition struct {
-	Field    string   `yaml:"field"`
-	Operator Operator `yaml:"operator"`
-	Value    any      `yaml:"value"`
+	Field    string   `json:"field" yaml:"field"`
+	Operator Operator `json:"operator" yaml:"operator"`
+	Value    any      `json:"value" yaml:"value"`
 }
 
 // MatchAll requires every nested condition to pass.
 type MatchAll struct {
-	All []Condition `yaml:"all"`
+	All []Condition `json:"all" yaml:"all"`
 }
 
 // SegmentDefinition describes how clients enter a segment.
 type SegmentDefinition struct {
-	ID          string     `yaml:"id"`
-	Description string     `yaml:"description"`
-	Match       MatchAll   `yaml:"match"`
+	ID          string   `json:"id" yaml:"id"`
+	Description string   `json:"description" yaml:"description"`
+	Match       MatchAll `json:"match" yaml:"match"`
 }
 
 // ActionType is what a rule triggers when it matches.
@@ -42,21 +42,21 @@ const (
 
 // Action is one side-effect of a matched rule.
 type Action struct {
-	Type     ActionType `yaml:"type"`
-	Points   int        `yaml:"points,omitempty"`
-	Template string     `yaml:"template,omitempty"`
-	Subject  string     `yaml:"subject,omitempty"`
+	Type     ActionType `json:"type" yaml:"type"`
+	Points   int        `json:"points,omitempty" yaml:"points,omitempty"`
+	Template string     `json:"template,omitempty" yaml:"template,omitempty"`
+	Subject  string     `json:"subject,omitempty" yaml:"subject,omitempty"`
 }
 
 // RuleDefinition is a declarative campaign rule loaded from YAML.
 type RuleDefinition struct {
-	ID          string     `yaml:"id"`
-	Name        string     `yaml:"name"`
-	Description string     `yaml:"description"`
-	Segment     string     `yaml:"segment,omitempty"` // empty = all clients
-	Condition   Condition  `yaml:"condition"`
-	Actions     []Action   `yaml:"actions"`
-	Enabled     bool       `yaml:"enabled"`
+	ID          string    `json:"id" yaml:"id"`
+	Name        string    `json:"name" yaml:"name"`
+	Description string    `json:"description" yaml:"description"`
+	Segment     string    `json:"segment,omitempty" yaml:"segment,omitempty"`
+	Condition   Condition `json:"condition" yaml:"condition"`
+	Actions     []Action  `json:"actions" yaml:"actions"`
+	Enabled     bool      `json:"enabled" yaml:"enabled"`
 }
 
 // SegmentsFile is the on-disk shape of config/segments.yaml.
