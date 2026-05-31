@@ -11,6 +11,52 @@ Production-ready Go service for **segment-based email campaigns** and **rule-dri
 - **Pluggable rewards** — `db_ledger`, in-memory `ledger`, **Open Loyalty**, **Voucherify**
 - **Docker + CI** — `docker compose up`, GitHub Actions
 
+## Admin UI
+
+Start the server (`make serve-dev` or `docker compose up`), then open **http://localhost:8080/admin/** (trailing slash required). Use API key `dev-key` unless you changed `server.admin_api_key`.
+
+The UI walks through the full reward flow: load client shopping profiles → evaluate segments → match rules → award points and send emails.
+
+### How it works
+
+Overview of the campaign pipeline and demo client summary:
+
+![Admin UI — How it works](docs/screenshots/overview.png)
+
+### Clients
+
+Live segment and rule matching per client (no campaign run required):
+
+![Admin UI — Clients](docs/screenshots/clients.png)
+
+### Segments
+
+View and edit segment definitions (JSON match conditions):
+
+![Admin UI — Segments](docs/screenshots/segments.png)
+
+### Rules
+
+View and edit campaign rules (conditions + point/email actions):
+
+![Admin UI — Rules](docs/screenshots/rules.png)
+
+### Campaign run
+
+Click **Run campaign now** to process all clients. Results appear on the overview tab and in run history:
+
+![Admin UI — Campaign results](docs/screenshots/campaign-results.png)
+
+![Admin UI — Campaign runs history](docs/screenshots/runs.png)
+
+To regenerate screenshots locally:
+
+```bash
+make serve-dev   # in another terminal
+npm install --no-save puppeteer-core
+node scripts/capture-admin-screenshots.mjs
+```
+
 ## Quick start (Docker — recommended)
 
 ```bash
@@ -24,6 +70,8 @@ docker compose up --build
 - Mailhog: http://localhost:8025
 - API key (default): `dev-key` — set header `Authorization: Bearer dev-key`
 
+See [Admin UI](#admin-ui) for screenshots of each screen.
+
 ## Local development (Go)
 
 Requires **Go 1.25+**
@@ -34,6 +82,10 @@ go mod tidy
 
 # File/CSV mode (no database):
 make dry-run
+
+# In-memory dev mode (no Docker/PostgreSQL):
+make serve-dev
+# Admin UI: http://127.0.0.1:8080/admin/
 
 # PostgreSQL mode:
 docker compose up -d postgres mailhog
