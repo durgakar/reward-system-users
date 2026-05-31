@@ -1,29 +1,31 @@
 campaign_id: spring_rewards_2026
 
-segments_file: config/segments.yaml
-rules_file: config/rules.yaml
-templates_dir: templates
-
+# File-based mode for local dry-run without PostgreSQL
+rules_source: file
+segments_source: file
 shopping_source: csv
 shopping_data_path: data/sample_clients.csv
+rules_file: config/rules.yaml
+segments_file: config/segments.yaml
 
+templates_dir: templates
 email_sender: stdout
 reward_provider: ledger
-
-# Set true to preview matches without sending email or awarding points
 dry_run: true
 
-smtp:
-  host: localhost
-  port: 1025
-  from: rewards@example.com
+# Production / Docker mode — switch to database sources:
+# rules_source: database
+# segments_source: database
+# shopping_source: database
+# reward_provider: db_ledger
+# dry_run: false
+# database:
+#   driver: postgres
+#   url: postgres://reward:reward@localhost:5432/reward_system?sslmode=disable
 
-open_loyalty:
-  base_url: http://localhost:8181/api
-  api_key: YOUR_OPEN_LOYALTY_TOKEN
-  store_code: default
+server:
+  port: 8080
+  admin_api_key: dev-key
 
-voucherify:
-  base_url: https://api.voucherify.io/v1
-  application_id: YOUR_APP_ID
-  secret_key: YOUR_SECRET_KEY
+cron:
+  enabled: false

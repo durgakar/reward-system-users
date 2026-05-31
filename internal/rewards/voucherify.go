@@ -1,6 +1,7 @@
 package rewards
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -13,21 +14,22 @@ import (
 	"github.com/durgakar/reward-system-users/pkg/plugin"
 )
 
-// VoucherifyProvider integrates with Voucherify's loyalty / promotion API.
-// Voucherify is SaaS (not fully OSS) but has a generous dev tier and is widely
-// used for rule-based promotions — a good bridge before self-hosting Open Loyalty.
-//
-// Docs: https://docs.voucherify.io/reference/create-publication
+// VoucherifyProvider integrates with Voucherify's loyalty API.
 type VoucherifyProvider struct {
 	cfg    config.Voucherify
-	client *http.Client
+	client HTTPDoer
 }
 
 func NewVoucherifyProvider(cfg config.Voucherify) *VoucherifyProvider {
 	return &VoucherifyProvider{
-		cfg: cfg,
+		cfg:    cfg,
 		client: &http.Client{Timeout: 15 * time.Second},
 	}
+}
+
+func (p *VoucherifyProvider) WithClient(c HTTPDoer) *VoucherifyProvider {
+	p.client = c
+	return p
 }
 
 func (p *VoucherifyProvider) Name() string { return "voucherify" }
@@ -36,23 +38,30 @@ func (p *VoucherifyProvider) AwardPoints(ctx context.Context, req plugin.AwardRe
 	if p.cfg.ApplicationID == "" || p.cfg.SecretKey == "" {
 		return nil, fmt.Errorf("voucherify application_id and secret_key are required")
 	}
-	payload := map[string]any{
-		"customer": map[string]string{
-			"source_id": req.ClientID,
-			"email":     req.Metadata["email"],
-		},
-		"points": req.Points,
-		"reason": req.Reason,
+	loyaltyID := p.cfg.LoyaltyID
+	if loyaltyID == "" {
+		loyaltyID = req.CampaignID
 	}
-	body, _ := json.Marshal(payload)
-	url := strings.TrimRight(p.cfg.BaseURL, "/") + "/loyalties/" + urlEscape(req.CampaignID) + "/members/" + urlEscape(req.ClientID) + "/balance"
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(body)))
+	if loyaltyID == "" {
+		return nil, fmt.Errorf("voucherify loyalty_id or campaign_id is required")
+	}
+
+	payload := map[string]any{"points": req.Points}
+	body, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
 	}
+	endpoint := fmt.Sprintf("%s/loyalties/%s/members/%s/balance",
+		strings.TrimRight(p.cfg.BaseURL, "/"), urlPathEscape(loyaltyID), urlPathEscape(req.ClientID))
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	p.setHeaders(httpReq)
 	httpReq.Header.Set("Content-Type", "application/json")
-	httpReq.Header.Set("X-App-Id", p.cfg.ApplicationID)
-	httpReq.Header.Set("X-App-Token", p.cfg.SecretKey)
+	if req.ReferenceID != "" {
+		httpReq.Header.Set("X-Idempotency-Key", req.ReferenceID)
+	}
 
 	resp, err := p.client.Do(httpReq)
 	if err != nil {
@@ -61,13 +70,15 @@ func (p *VoucherifyProvider) AwardPoints(ctx context.Context, req plugin.AwardRe
 	defer resp.Body.Close()
 	respBody, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("voucherify status %d: %s", resp.StatusCode, string(respBody))
+		return nil, fmt.Errorf("voucherify status %d: %s", resp.StatusCode, strings.TrimSpace(string(respBody)))
 	}
 
 	var parsed struct {
 		Points int `json:"points"`
 	}
-	_ = json.Unmarshal(respBody, &parsed)
+	if err := json.Unmarshal(respBody, &parsed); err != nil {
+		return nil, fmt.Errorf("voucherify decode: %w", err)
+	}
 	return &plugin.AwardResult{
 		TransactionID: req.ReferenceID,
 		NewBalance:    parsed.Points,
@@ -79,13 +90,12 @@ func (p *VoucherifyProvider) GetBalance(ctx context.Context, clientID string) (i
 	if p.cfg.ApplicationID == "" || p.cfg.SecretKey == "" {
 		return 0, fmt.Errorf("voucherify credentials required")
 	}
-	url := strings.TrimRight(p.cfg.BaseURL, "/") + "/customers/" + urlEscape(clientID)
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	endpoint := strings.TrimRight(p.cfg.BaseURL, "/") + "/customers/" + urlPathEscape(clientID)
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return 0, err
 	}
-	httpReq.Header.Set("X-App-Id", p.cfg.ApplicationID)
-	httpReq.Header.Set("X-App-Token", p.cfg.SecretKey)
+	p.setHeaders(httpReq)
 	resp, err := p.client.Do(httpReq)
 	if err != nil {
 		return 0, err
@@ -106,6 +116,11 @@ func (p *VoucherifyProvider) GetBalance(ctx context.Context, clientID string) (i
 	return parsed.Loyalty.Points, nil
 }
 
-func urlEscape(v string) string {
+func (p *VoucherifyProvider) setHeaders(req *http.Request) {
+	req.Header.Set("X-App-Id", p.cfg.ApplicationID)
+	req.Header.Set("X-App-Token", p.cfg.SecretKey)
+}
+
+func urlPathEscape(v string) string {
 	return strings.ReplaceAll(v, " ", "%20")
 }

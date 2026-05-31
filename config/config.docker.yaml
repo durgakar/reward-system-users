@@ -1,34 +1,33 @@
-campaign_id: spring_rewards_2026
+campaign_id: docker_production
 
 rules_source: database
 segments_source: database
 shopping_source: database
-
 templates_dir: templates
-email_sender: stdout
+email_sender: smtp
 reward_provider: db_ledger
 dry_run: false
 
 database:
   driver: postgres
-  url: postgres://reward:reward@localhost:5432/reward_system?sslmode=disable
+  url: postgres://reward:reward@postgres:5432/reward_system?sslmode=disable
 
 server:
   host: 0.0.0.0
   port: 8080
-  admin_api_key: dev-key-change-me
+  admin_api_key: dev-key
 
 cron:
   enabled: true
   schedule: "0 9 * * *"
 
 smtp:
-  host: localhost
+  host: mailhog
   port: 1025
   from: rewards@example.com
 
 open_loyalty:
-  base_url: http://localhost:8181/api
+  base_url: http://openloyalty:8181/api
   api_key: ""
   store_code: default
 

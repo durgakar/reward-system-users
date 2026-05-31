@@ -7,17 +7,18 @@ import (
 
 	"github.com/durgakar/reward-system-users/internal/email"
 	"github.com/durgakar/reward-system-users/internal/rules"
+	"github.com/durgakar/reward-system-users/internal/store"
 	"github.com/durgakar/reward-system-users/pkg/plugin"
 )
 
 // Result summarizes one client's campaign processing.
 type Result struct {
-	ClientID     string
-	Segments     []string
-	RuleMatches  int
-	PointsAwarded int
-	EmailsSent   int
-	Errors       []string
+	ClientID      string   `json:"client_id"`
+	Segments      []string `json:"segments"`
+	RuleMatches   int      `json:"rule_matches"`
+	PointsAwarded int      `json:"points_awarded"`
+	EmailsSent    int      `json:"emails_sent"`
+	Errors        []string `json:"errors,omitempty"`
 }
 
 // Runner orchestrates segment evaluation, rules, rewards, and email delivery.
@@ -31,6 +32,7 @@ type Runner struct {
 	Renderer        *email.Renderer
 	DryRun          bool
 	Logger          *slog.Logger
+	Store           store.Store
 }
 
 func (r *Runner) Run(ctx context.Context) ([]Result, error) {
@@ -39,11 +41,41 @@ func (r *Runner) Run(ctx context.Context) ([]Result, error) {
 		return nil, fmt.Errorf("list clients: %w", err)
 	}
 
+	var runID int64
+	var summary store.CampaignSummary
+	finishStatus := "completed"
+	defer func() {
+		if r.Store != nil && !r.DryRun && runID > 0 {
+			if finishStatus == "completed" && summary.ErrorsCount > 0 {
+				finishStatus = "completed_with_errors"
+			}
+			if err := r.Store.FinishCampaignRun(context.Background(), runID, finishStatus, summary); err != nil && r.Logger != nil {
+				r.Logger.Error("finish campaign run", "run_id", runID, "error", err)
+			}
+		}
+	}()
+
+	if r.Store != nil && !r.DryRun {
+		runID, err = r.Store.StartCampaignRun(ctx, r.CampaignID)
+		if err != nil {
+			return nil, fmt.Errorf("start campaign run: %w", err)
+		}
+	}
+
 	results := make([]Result, 0, len(clients))
 	for _, client := range clients {
+		if ctx.Err() != nil {
+			finishStatus = "canceled"
+			return results, ctx.Err()
+		}
 		res := r.processClient(ctx, client)
 		results = append(results, res)
+		summary.ClientsProcessed++
+		summary.PointsAwarded += res.PointsAwarded
+		summary.EmailsSent += res.EmailsSent
+		summary.ErrorsCount += len(res.Errors)
 	}
+
 	return results, nil
 }
 

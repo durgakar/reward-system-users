@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>reward-system-users Admin</title>
+  <link rel="stylesheet" href="/admin/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Reward System Admin</h1>
+    <p>Manage segments and rules without editing YAML files.</p>
+  </header>
+
+  <section class="toolbar">
+    <label>API Key <input id="apiKey" type="password" placeholder="Bearer token (if configured)" /></label>
+    <button id="runCampaign">Run campaign now</button>
+    <span id="status"></span>
+  </section>
+
+  <nav>
+    <button class="tab active" data-tab="segments">Segments</button>
+    <button class="tab" data-tab="rules">Rules</button>
+    <button class="tab" data-tab="runs">Campaign runs</button>
+  </nav>
+
+  <main id="segments" class="panel active">
+    <h2>Segments</h2>
+    <div id="segmentList"></div>
+    <h3>Create / update segment</h3>
+    <form id="segmentForm">
+      <input name="id" placeholder="id e.g. high_spender" required />
+      <input name="description" placeholder="description" />
+      <textarea name="match_json" rows="6" placeholder='{"all":[{"field":"lifetime_spend_usd","operator":"gte","value":500}]}' required></textarea>
+      <button type="submit">Save segment</button>
+    </form>
+  </main>
+
+  <main id="rules" class="panel">
+    <h2>Rules</h2>
+    <div id="ruleList"></div>
+    <h3>Create / update rule</h3>
+    <form id="ruleForm">
+      <input name="id" placeholder="id e.g. high_order_bonus" required />
+      <input name="name" placeholder="name" required />
+      <input name="segment" placeholder="segment (optional)" />
+      <textarea name="condition_json" rows="4" placeholder='{"field":"last_order_total_usd","operator":"gte","value":100}' required></textarea>
+      <textarea name="actions_json" rows="6" placeholder='[{"type":"award_points","points":500},{"type":"send_email","template":"high_spender_bonus","subject":"Hi {{.Client.FirstName}}"}]' required></textarea>
+      <label><input name="enabled" type="checkbox" checked /> Enabled</label>
+      <button type="submit">Save rule</button>
+    </form>
+  </main>
+
+  <main id="runs" class="panel">
+    <h2>Recent campaign runs</h2>
+    <div id="runList"></div>
+  </main>
+
+  <script src="/admin/app.js"></script>
+</body>
+</html>

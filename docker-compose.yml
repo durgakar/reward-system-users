@@ -1,6 +1,52 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: reward
+      POSTGRES_PASSWORD: reward
+      POSTGRES_DB: reward_system
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reward -d reward_system"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build: .
+    command: ["migrate", "-config", "/app/config/config.docker.yaml"]
+    environment:
+      DATABASE_URL: postgres://reward:reward@postgres:5432/reward_system?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  app:
+    build: .
+    command: ["serve", "-config", "/app/config/config.docker.yaml"]
+    environment:
+      DATABASE_URL: postgres://reward:reward@postgres:5432/reward_system?sslmode=disable
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-dev-key}
+      REWARD_PROVIDER: ${REWARD_PROVIDER:-db_ledger}
+      OPEN_LOYALTY_API_KEY: ${OPEN_LOYALTY_API_KEY:-}
+      VOUCHERIFY_APP_ID: ${VOUCHERIFY_APP_ID:-}
+      VOUCHERIFY_SECRET_KEY: ${VOUCHERIFY_SECRET_KEY:-}
+    ports:
+      - "8080:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      mailhog:
+        condition: service_started
+
   mailhog:
     image: mailhog/mailhog:v1.0.1
     ports:
       - "1025:1025"
       - "8025:8025"
+
+volumes:
+  pgdata:
