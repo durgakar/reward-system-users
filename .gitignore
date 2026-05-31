@@ -17,3 +17,6 @@ config/config.local.yaml
 # IDE
 .idea/
 .vscode/
+
+# Local tooling (gh CLI, etc.)
+.tools/

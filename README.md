@@ -28,12 +28,21 @@ Every integration point is a Go interface in [`pkg/plugin`](pkg/plugin/plugin.go
 # Install Go on macOS (if needed)
 brew install go
 
-cd reward-system-users
+# Clone to ~/reward-system-users (matches GitHub repo name)
+git clone https://github.com/durgakar/reward-system-users.git ~/reward-system-users
+cd ~/reward-system-users
+
+# Or use the helper script:
+# ./scripts/setup-local.sh
+
 go mod tidy
 make dry-run    # preview matches without side effects
 make run        # award points + print emails to stdout
 make test
+make build      # produces bin/reward-system-users
 ```
+
+**Open in Cursor:** File → Open Folder → `~/reward-system-users`
 
 ## Example rule
 
@@ -144,7 +153,7 @@ func (s *ShopifySource) GetProfile(ctx context.Context, id string) (plugin.Clien
 ## Project layout
 
 ```
-cmd/rewards/          CLI entrypoint
+cmd/reward-system-users/  CLI entrypoint
 pkg/plugin/           Public extension interfaces
 internal/
   campaign/           Orchestrator

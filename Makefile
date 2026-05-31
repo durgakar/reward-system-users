@@ -1,16 +1,19 @@
 .PHONY: run test build tidy dry-run docker-mail
 
+BINARY=reward-system-users
+CMD=./cmd/reward-system-users
+
 run:
-	go run ./cmd/rewards -config config/config.yaml
+	go run $(CMD) -config config/config.yaml
 
 dry-run:
-	go run ./cmd/rewards -config config/config.example.yaml
+	go run $(CMD) -config config/config.example.yaml
 
 test:
 	go test ./...
 
 build:
-	go build -o bin/rewards ./cmd/rewards
+	go build -o bin/$(BINARY) $(CMD)
 
 tidy:
 	go mod tidy
